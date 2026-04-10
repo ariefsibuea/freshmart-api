@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
 
@@ -57,9 +58,16 @@ func ErrorHandler(err error, c echo.Context) {
 		code = apiErr.Code()
 		message = apiErr.Error()
 	default:
-		if he, ok := err.(*echo.HTTPError); ok {
-			code = he.Code
-			message = he.Message.(string)
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			code = httpErr.Code
+			switch msg := httpErr.Message.(type) {
+			case string:
+				message = msg
+			case error:
+				message = msg.Error()
+			default:
+				message = fmt.Sprintf("%v", msg)
+			}
 		} else {
 			code = pkgerr.GetErrorCode(err)
 			message = err.Error()
