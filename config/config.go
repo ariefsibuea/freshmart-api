@@ -1,6 +1,16 @@
 package config
 
-import "time"
+import (
+	"sync"
+	"time"
+
+	"github.com/kelseyhightower/envconfig"
+)
+
+var (
+	conf Config
+	once sync.Once
+)
 
 type Config struct {
 	ServerPort            int           `envconfig:"SERVER_PORT" default:"8080"`
@@ -31,4 +41,11 @@ type CacheConfig struct {
 
 	RedisHost string `envconfig:"REDIS_HOST" default:"redis"`
 	RedisPort int    `envconfig:"REDIS_PORT" default:"6379"`
+}
+
+func Load() Config {
+	once.Do(func() {
+		envconfig.MustProcess("", &conf)
+	})
+	return conf
 }

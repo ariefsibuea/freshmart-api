@@ -3,6 +3,7 @@ module github.com/ariefsibuea/freshmart-api
 go 1.25.9
 
 require (
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo/v4 v4.15.1
 	github.com/redis/go-redis/v9 v9.18.0
 )

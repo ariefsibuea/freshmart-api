@@ -8,13 +8,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+
+	"github.com/ariefsibuea/freshmart-api/config"
 
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
 	e := echo.New()
+	conf := config.Load()
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]any{
@@ -22,11 +24,15 @@ func main() {
 		})
 	})
 
+	e.Server.ReadTimeout = conf.ServerReadTimeout
+	e.Server.WriteTimeout = conf.ServerWriteTimeout
+	e.Server.IdleTimeout = conf.ServerIdleTimeout
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	go func() {
-		address := fmt.Sprintf(":%d", 8080)
+		address := fmt.Sprintf(":%d", conf.ServerPort)
 		if err := e.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatalf("shutting down the server: %v", err)
 		}
@@ -34,7 +40,7 @@ func main() {
 
 	<-ctx.Done()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), conf.ServerShutdownTimeout)
 	defer cancel()
 
 	if err := e.Shutdown(shutdownCtx); err != nil {
