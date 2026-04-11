@@ -47,12 +47,16 @@ func Error(c echo.Context, statusCode int, message string) error {
 }
 
 func ErrorHandler(err error, c echo.Context) {
+	if c.Response().Committed {
+		return // response has been already sent to the client by handler or some middleware
+	}
+
 	var (
 		code    int
 		message string
+		apiErr  *pkgerr.APIError
 	)
 
-	var apiErr *pkgerr.APIError
 	switch {
 	case errors.As(err, &apiErr):
 		code = apiErr.Code()
