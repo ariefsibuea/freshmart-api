@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -12,11 +13,19 @@ type redisCache struct {
 	rdb *redis.Client
 }
 
-func NewRedis(addr string) Cache {
+func NewRedis(addr string, pingTimeout time.Duration) (Cache, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
-	return &redisCache{rdb: rdb}
+
+	ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
+	defer cancel()
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("redis ping failed: %w", err)
+	}
+
+	return &redisCache{rdb: rdb}, nil
 }
 
 func (c *redisCache) Get(ctx context.Context, key string, dest any) error {

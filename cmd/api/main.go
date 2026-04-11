@@ -12,11 +12,14 @@ import (
 	"github.com/ariefsibuea/freshmart-api/config"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 )
 
 func main() {
-	e := echo.New()
 	conf := config.Load()
+
+	e := echo.New()
+	e.Logger.SetLevel(log.Lvl(conf.LogLevel))
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]any{
