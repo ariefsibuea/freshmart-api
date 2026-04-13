@@ -1,3 +1,4 @@
+SHELL := $(shell which bash)
 COMPOSE := docker compose
 
 ifneq (,$(wildcard ./.env))
