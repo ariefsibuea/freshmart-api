@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/ariefsibuea/freshmart-api/config"
+	"github.com/ariefsibuea/freshmart-api/internal/cache"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -26,6 +27,13 @@ func main() {
 			"status": "ok",
 		})
 	})
+
+	redisAddr := fmt.Sprintf("%s:%d", conf.Cache.RedisHost, conf.Cache.RedisPort)
+	// WARN: ignore returned redis instance since we don't use it yet
+	_, err := cache.NewRedis(redisAddr, conf.Cache.RedisPingTimeout)
+	if err != nil {
+		e.Logger.Fatalf("could not connect to redis at '%s:%d': %v", conf.Cache.RedisHost, conf.Cache.RedisPort, err)
+	}
 
 	e.Server.ReadTimeout = conf.ServerReadTimeout
 	e.Server.WriteTimeout = conf.ServerWriteTimeout
