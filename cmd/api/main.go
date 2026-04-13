@@ -40,11 +40,15 @@ func main() {
 		e.Logger.Warnf("redis at %q unavailable, continuing without cache: %v", redisAddr, err)
 	}
 
-	// WARN: ignore returned mysql db instance since we don't use it yet
-	_, err = database.NewMySQLConnection(conf.Database)
+	mysqlDB, err := database.NewMySQLConnection(conf.Database)
 	if err != nil {
 		e.Logger.Fatalf("mysql db unavailable: %v", err)
 	}
+	defer func() {
+		if err := mysqlDB.Close(); err != nil {
+			e.Logger.Warnf("close mysq connection failed: %v", err)
+		}
+	}()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
