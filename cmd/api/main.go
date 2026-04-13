@@ -32,7 +32,7 @@ func main() {
 	// WARN: ignore returned redis instance since we don't use it yet
 	_, err := cache.NewRedis(redisAddr, conf.Cache.RedisPingTimeout)
 	if err != nil {
-		e.Logger.Fatalf("could not connect to redis at '%s:%d': %v", conf.Cache.RedisHost, conf.Cache.RedisPort, err)
+		e.Logger.Warnf("redis at %q unavailable, continuing without cache", redisAddr, err)
 	}
 
 	e.Server.ReadTimeout = conf.ServerReadTimeout
