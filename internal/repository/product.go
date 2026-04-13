@@ -31,12 +31,12 @@ func (r *productRepository) Create(ctx context.Context, product model.Product) (
 		product.Quantity,
 	)
 	if err != nil {
-		return model.Product{}, fmt.Errorf("failed to create product: %w", err)
+		return model.Product{}, err
 	}
 
 	lastID, err := result.LastInsertId()
 	if err != nil {
-		return model.Product{}, fmt.Errorf("failed to get last insert id: %w", err)
+		return model.Product{}, err
 	}
 
 	product.ID = lastID
@@ -57,7 +57,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 	offset := (page - 1) * pageSize
 
 	whereClause := ""
-	args := []interface{}{}
+	args := []any{}
 
 	if filter.Name != "" {
 		whereClause += " WHERE name LIKE ?"
@@ -76,7 +76,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 	countQuery := "SELECT COUNT(*) FROM products" + whereClause
 	totalProducts := int64(0)
 	if err := r.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalProducts); err != nil {
-		return nil, 0, fmt.Errorf("failed to count products: %w", err)
+		return nil, 0, fmt.Errorf("count products failed: %w", err)
 	}
 
 	orderClause := " ORDER BY "
@@ -97,7 +97,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 		orderClause += " DESC"
 	}
 
-	limitOffsetClause := fmt.Sprintf(" LIMIT ? OFFSET ?")
+	limitOffsetClause := " LIMIT ? OFFSET ?"
 	args = append(args, pageSize, offset)
 
 	query := `
@@ -107,7 +107,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to query products: %w", err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -128,7 +128,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 			&product.UpdatedAt,
 		)
 		if err != nil {
-			return nil, 0, fmt.Errorf("failed to scan product row: %w", err)
+			return nil, 0, err
 		}
 
 		product.ProductType = model.ProductType(productTypeStr)
@@ -139,7 +139,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("error iterating product rows: %w", err)
+		return nil, 0, err
 	}
 
 	return products, totalProducts, nil
@@ -171,7 +171,7 @@ func (r *productRepository) Get(ctx context.Context, id int64) (model.Product, e
 		if err == sql.ErrNoRows {
 			return model.Product{}, pkgerr.NotFoundErrorf("product with id %d not found", id)
 		}
-		return model.Product{}, fmt.Errorf("failed to find product by id: %w", err)
+		return model.Product{}, err
 	}
 
 	product.ProductType = model.ProductType(productTypeStr)
