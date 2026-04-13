@@ -32,6 +32,7 @@ type DatabaseConfig struct {
 	MysqlPassword string `envconfig:"MYSQL_PASSWORD" default:"password"`
 	MysqlDatabase string `envconfig:"MYSQL_DATABASE" default:"freshmart_api"`
 
+	MysqlPingTimeout     time.Duration `envconfig:"MYSQL_PING_TIMEOUT" default:"5s"`
 	MysqlMaxOpenConns    int           `envconfig:"MYSQL_MAX_OPEN_CONNS" default:"5"`
 	MysqlMaxIdleConns    int           `envconfig:"MYSQL_MAX_IDLE_CONNS" default:"2"`
 	MysqlMaxConnLifetime time.Duration `envconfig:"MYSQL_MAX_CONN_LIFETIME" default:"1h"`

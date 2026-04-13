@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func NewMySQLConnection(conf config.DatabaseConfig) (*sql.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci",
 		conf.MysqlUser,
 		conf.MysqlPassword,
 		conf.MysqlHost,
@@ -28,7 +29,10 @@ func NewMySQLConnection(conf config.DatabaseConfig) (*sql.DB, error) {
 	db.SetConnMaxLifetime(conf.MysqlMaxConnLifetime)
 	db.SetConnMaxIdleTime(conf.MysqlMaxConnIdleTime)
 
-	if err := db.Ping(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), conf.MysqlPingTimeout)
+	defer cancel()
+
+	if err := db.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("mysql ping failed: %w", err)
 	}
 
