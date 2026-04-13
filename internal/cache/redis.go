@@ -13,7 +13,7 @@ type redisCache struct {
 	rdb *redis.Client
 }
 
-func NewRedis(addr string, pingTimeout time.Duration) (Cache, error) {
+func NewRedisConnection(addr string, pingTimeout time.Duration) (Cache, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
