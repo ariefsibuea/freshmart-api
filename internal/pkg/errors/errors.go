@@ -44,3 +44,11 @@ func ValidationError(msg string) *APIError {
 func ValidationErrorf(format string, args ...any) *APIError {
 	return &APIError{StatusCode: http.StatusUnprocessableEntity, Message: fmt.Sprintf(format, args...)}
 }
+
+func NotFoundError(msg string) *APIError {
+	return &APIError{StatusCode: http.StatusNotFound, Message: msg}
+}
+
+func NotFoundErrorf(format string, args ...any) *APIError {
+	return &APIError{StatusCode: http.StatusNotFound, Message: fmt.Sprintf(format, args...)}
+}
