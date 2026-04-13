@@ -31,9 +31,7 @@ api-stop:
 
 .PHONY: api-reset
 api-reset:
-	$(COMPOSE) down -v
-	docker image prune -f
-	docker volume prune -f
+	$(COMPOSE) down -v --rmi local --remove-orphans
 
 MIGRATE := migrate
 MIGRATIONS_PATH := ./internal/migrations
@@ -63,4 +61,5 @@ migrate-down-all:
 		exit 1; \
 	fi
 	@echo "WARNING: This will rollback ALL migrations and drop all tables!"
+	@read -p "Type 'y' to confirm: " confirm && [ "$$confirm" = "y" ]
 	$(MIGRATE) -path $(MIGRATIONS_PATH) -database "$(DB_URL)" down
