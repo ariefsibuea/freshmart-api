@@ -21,11 +21,12 @@ func NewRedis(addr string, pingTimeout time.Duration) (Cache, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
 	defer cancel()
 
-	if err := rdb.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("redis ping failed: %w", err)
+	err := rdb.Ping(ctx).Err()
+	if err != nil {
+		err = fmt.Errorf("redis ping failed: %w", err)
 	}
 
-	return &redisCache{rdb: rdb}, nil
+	return &redisCache{rdb: rdb}, err
 }
 
 func (c *redisCache) Get(ctx context.Context, key string, dest any) error {
