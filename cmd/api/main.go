@@ -11,6 +11,7 @@ import (
 
 	"github.com/ariefsibuea/freshmart-api/config"
 	"github.com/ariefsibuea/freshmart-api/internal/cache"
+	"github.com/ariefsibuea/freshmart-api/internal/database"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -28,16 +29,22 @@ func main() {
 		})
 	})
 
+	e.Server.ReadTimeout = conf.ServerReadTimeout
+	e.Server.WriteTimeout = conf.ServerWriteTimeout
+	e.Server.IdleTimeout = conf.ServerIdleTimeout
+
 	redisAddr := fmt.Sprintf("%s:%d", conf.Cache.RedisHost, conf.Cache.RedisPort)
 	// WARN: ignore returned redis instance since we don't use it yet
-	_, err := cache.NewRedis(redisAddr, conf.Cache.RedisPingTimeout)
+	_, err := cache.NewRedisConnection(redisAddr, conf.Cache.RedisPingTimeout)
 	if err != nil {
 		e.Logger.Warnf("redis at %q unavailable, continuing without cache: %v", redisAddr, err)
 	}
 
-	e.Server.ReadTimeout = conf.ServerReadTimeout
-	e.Server.WriteTimeout = conf.ServerWriteTimeout
-	e.Server.IdleTimeout = conf.ServerIdleTimeout
+	// WARN: ignore returned mysql db instance since we don't use it yet
+	_, err = database.NewMySQLConnection(conf.Database)
+	if err != nil {
+		e.Logger.Fatalf("mysql db unavailable: %v", err)
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
