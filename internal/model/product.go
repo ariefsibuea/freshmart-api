@@ -1,7 +1,6 @@
 package model
 
 import (
-	"database/sql"
 	"strings"
 	"time"
 
@@ -38,14 +37,14 @@ func (t ProductType) String() string {
 }
 
 type Product struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Price       float64        `json:"price"`
-	ProductType ProductType    `json:"product_type"`
-	Description sql.NullString `json:"description"`
-	Quantity    int            `json:"quantity"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	ID          int64       `json:"id"`
+	Name        string      `json:"name"`
+	Price       float64     `json:"price"`
+	ProductType ProductType `json:"product_type"`
+	Description string      `json:"description"`
+	Quantity    int         `json:"quantity"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 type CreateProductRequest struct {
