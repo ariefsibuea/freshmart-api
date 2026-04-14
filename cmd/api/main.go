@@ -31,7 +31,7 @@ func main() {
 	e.Server.WriteTimeout = conf.ServerWriteTimeout
 	e.Server.IdleTimeout = conf.ServerIdleTimeout
 
-	e.HTTPErrorHandler = handler.ErrorHandler
+	e.HTTPErrorHandler = mw.ErrorHandler
 
 	e.Use(mw.RequestID())
 	e.Use(mw.Log())
