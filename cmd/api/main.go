@@ -12,6 +12,9 @@ import (
 	"github.com/ariefsibuea/freshmart-api/config"
 	"github.com/ariefsibuea/freshmart-api/internal/cache"
 	"github.com/ariefsibuea/freshmart-api/internal/database"
+	"github.com/ariefsibuea/freshmart-api/internal/handler"
+	"github.com/ariefsibuea/freshmart-api/internal/repository"
+	"github.com/ariefsibuea/freshmart-api/internal/usecase"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -23,19 +26,14 @@ func main() {
 	e := echo.New()
 	e.Logger.SetLevel(log.Lvl(conf.LogLevel))
 
-	e.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]any{
-			"status": "ok",
-		})
-	})
-
 	e.Server.ReadTimeout = conf.ServerReadTimeout
 	e.Server.WriteTimeout = conf.ServerWriteTimeout
 	e.Server.IdleTimeout = conf.ServerIdleTimeout
 
+	e.HTTPErrorHandler = handler.ErrorHandler
+
 	redisAddr := fmt.Sprintf("%s:%d", conf.Cache.RedisHost, conf.Cache.RedisPort)
-	// WARN: ignore returned redis instance since we don't use it yet
-	_, err := cache.NewRedisConnection(redisAddr, conf.Cache.RedisPingTimeout)
+	redisCache, err := cache.NewRedisConnection(redisAddr, conf.Cache.RedisPingTimeout)
 	if err != nil {
 		e.Logger.Warnf("redis at %q unavailable, continuing without cache: %v", redisAddr, err)
 	}
@@ -49,6 +47,18 @@ func main() {
 			e.Logger.Warnf("close mysq connection failed: %v", err)
 		}
 	}()
+
+	e.GET("/health", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]any{
+			"status": "ok",
+		})
+	})
+
+	apiGroup := e.Group("/api/v1")
+
+	productRepository := repository.NewProductRepository(mysqlDB)
+	productUsecase := usecase.NewProductUsecase(productRepository, redisCache, conf.Cache.DefaultCacheTTL)
+	handler.InitProductHandler(apiGroup, productUsecase)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
