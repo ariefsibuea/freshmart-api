@@ -63,7 +63,7 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 	}
 
 	if err != cache.ErrCacheKeyNotFound {
-		slog.Warn("cache key not found", "cacheKey", cacheKey)
+		slog.Warn("cache get error", "cacheKey", cacheKey, "error", err)
 	}
 
 	product, err := u.repository.Get(ctx, id)
@@ -78,7 +78,7 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 	return product, nil
 }
 
-func (u *productUsecase) Fetch(ctx context.Context, filter repository.ProductFilter) ([]model.Product, int64, error) {
+func (u *productUsecase) Fetch(ctx context.Context, filter model.ProductFilter) ([]model.Product, int64, error) {
 	products, total, err := u.repository.Fetch(ctx, filter)
 	if err != nil {
 		return nil, 0, fmt.Errorf("fetch products failed: %w", err)

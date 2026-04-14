@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
 
@@ -36,6 +37,14 @@ func Success(c echo.Context, statusCode int, data any) error {
 	return c.JSON(statusCode, Response{
 		Status: StatusSuccess,
 		Data:   data,
+	})
+}
+
+func SuccessWithPagination(c echo.Context, statusCode int, data any, pagination Pagination) error {
+	return c.JSON(statusCode, Response{
+		Status:     StatusSuccess,
+		Data:       data,
+		Pagination: &pagination,
 	})
 }
 
@@ -73,7 +82,7 @@ func ErrorHandler(err error, c echo.Context) {
 				message = fmt.Sprintf("%v", msg)
 			}
 		} else {
-			code = pkgerr.GetErrorCode(err)
+			code = http.StatusInternalServerError
 			message = err.Error()
 		}
 	}

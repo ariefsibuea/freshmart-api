@@ -43,18 +43,8 @@ func (r *productRepository) Create(ctx context.Context, product model.Product) (
 	return product, nil
 }
 
-func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]model.Product, int64, error) {
-	page := filter.Page
-	if page < 1 {
-		page = DefaultPage
-	}
-
-	pageSize := filter.PageSize
-	if pageSize < 1 {
-		pageSize = DefaultPageSize
-	}
-
-	offset := (page - 1) * pageSize
+func (r *productRepository) Fetch(ctx context.Context, filter model.ProductFilter) ([]model.Product, int64, error) {
+	offset := (filter.Page - 1) * filter.PageSize
 
 	whereClause := ""
 	args := []any{}
@@ -91,14 +81,16 @@ func (r *productRepository) Fetch(ctx context.Context, filter ProductFilter) ([]
 		orderClause += "created_at"
 	}
 
+	// NOTE: add id as unique column when sorting the products in case
+	// the remaining sort columns have the same values accross products.
 	if filter.Order == "asc" {
-		orderClause += " ASC"
+		orderClause += " ASC, id ASC"
 	} else {
-		orderClause += " DESC"
+		orderClause += " DESC, id DESC"
 	}
 
 	limitOffsetClause := " LIMIT ? OFFSET ?"
-	args = append(args, pageSize, offset)
+	args = append(args, filter.PageSize, offset)
 
 	query := `
 		SELECT id, name, price, product_type, description, quantity, created_at, updated_at

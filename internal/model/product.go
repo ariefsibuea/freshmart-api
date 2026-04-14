@@ -7,6 +7,11 @@ import (
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
 )
 
+const (
+	DefaultPage     = 1
+	DefaultPageSize = 10
+)
+
 type ProductType string
 
 // List of product types based on enums in storage.
@@ -34,6 +39,19 @@ func (t ProductType) IsValid() bool {
 
 func (t ProductType) String() string {
 	return string(t)
+}
+
+var ValidSortBy = map[string]bool{
+	"":      true, // default will be used
+	"price": true,
+	"name":  true,
+	"date":  true,
+}
+
+var ValidOrder = map[string]bool{
+	"":     true, // default will be used
+	"asc":  true,
+	"desc": true,
 }
 
 type Product struct {
@@ -70,6 +88,38 @@ func (r *CreateProductRequest) Validate() error {
 
 	if r.Quantity < 0 {
 		return pkgerr.ValidationError("quantity must be greater than or equal to 0")
+	}
+
+	return nil
+}
+
+type ProductFilter struct {
+	Name        string
+	ProductType ProductType
+	SortBy      string
+	Order       string
+	Page        int
+	PageSize    int
+}
+
+func (f *ProductFilter) Validate() error {
+	if f.ProductType.String() != "" && !f.ProductType.IsValid() {
+		return pkgerr.BadRequestErrorf("invalid product_type: must be one of %v", ValidProductTypes)
+	}
+
+	if !ValidSortBy[f.SortBy] {
+		return pkgerr.BadRequestError("invalid sort_by: must be one of 'price', 'name', 'date'")
+	}
+
+	if !ValidOrder[f.Order] {
+		return pkgerr.BadRequestError("invalid order: must be one of 'asc', 'desc'")
+	}
+
+	if f.Page < 1 {
+		f.Page = 1
+	}
+	if f.PageSize < 1 {
+		f.PageSize = 10
 	}
 
 	return nil
