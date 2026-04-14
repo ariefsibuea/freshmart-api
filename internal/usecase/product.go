@@ -38,11 +38,8 @@ func (u *productUsecase) Create(ctx context.Context, req model.CreateProductRequ
 		Name:        req.Name,
 		Price:       req.Price,
 		ProductType: req.ProductType,
+		Description: req.Description,
 		Quantity:    req.Quantity,
-	}
-
-	if req.Description != nil {
-		product.Description = *req.Description
 	}
 
 	createdProduct, err := u.repository.Create(ctx, product)

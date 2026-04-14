@@ -60,7 +60,7 @@ type Product struct {
 	Name        string      `json:"name"`
 	Price       float64     `json:"price"`
 	ProductType ProductType `json:"product_type"`
-	Description string      `json:"description"`
+	Description *string     `json:"description,omitempty"`
 	Quantity    int         `json:"quantity"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`

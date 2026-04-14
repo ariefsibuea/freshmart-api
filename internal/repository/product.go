@@ -23,11 +23,16 @@ func (r *productRepository) Create(ctx context.Context, product model.Product) (
 		VALUES (?, ?, ?, ?, ?)
 	`
 
+	var description sql.NullString
+	if product.Description != nil {
+		description = sql.NullString{String: *product.Description, Valid: true}
+	}
+
 	result, err := r.db.ExecContext(ctx, query,
 		product.Name,
 		product.Price,
 		product.ProductType.String(),
-		product.Description,
+		description,
 		product.Quantity,
 	)
 	if err != nil {
@@ -124,7 +129,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter model.ProductFilte
 
 		product.ProductType = model.ProductType(productTypeStr)
 		if description.Valid {
-			product.Description = description.String
+			product.Description = &description.String
 		}
 		products = append(products, product)
 	}
@@ -168,7 +173,7 @@ func (r *productRepository) Get(ctx context.Context, id int64) (model.Product, e
 
 	product.ProductType = model.ProductType(productTypeStr)
 	if description.Valid {
-		product.Description = description.String
+		product.Description = &description.String
 	}
 	return product, nil
 }
