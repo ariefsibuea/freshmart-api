@@ -156,13 +156,14 @@ func (r *productRepository) Get(ctx context.Context, id int64) (model.Product, e
 
 	var product model.Product
 	var productTypeStr string
+	var description sql.NullString
 
 	err := row.Scan(
 		&product.ID,
 		&product.Name,
 		&product.Price,
 		&productTypeStr,
-		&product.Description,
+		&description,
 		&product.Quantity,
 		&product.CreatedAt,
 		&product.UpdatedAt,
@@ -175,5 +176,8 @@ func (r *productRepository) Get(ctx context.Context, id int64) (model.Product, e
 	}
 
 	product.ProductType = model.ProductType(productTypeStr)
+	if description.Valid {
+		product.Description = description.String
+	}
 	return product, nil
 }
