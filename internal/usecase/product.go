@@ -65,7 +65,6 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 	if err != cache.ErrCacheKeyNotFound {
 		logger.FromContext(ctx).Warn("cache get error",
 			"cacheKey", cacheKey,
-			"error", err,
 			logger.FieldError, err.Error(),
 		)
 	}
@@ -79,7 +78,7 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 		logger.FromContext(ctx).Warn("write product to cache failed",
 			"id", id,
 			"cacheKey", cacheKey,
-			logger.FieldError, err.Error(),
+			logger.FieldError, cacheErr.Error(),
 		)
 	}
 
