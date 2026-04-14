@@ -34,13 +34,12 @@ func (r *productRepository) Create(ctx context.Context, product model.Product) (
 		return model.Product{}, err
 	}
 
-	lastID, err := result.LastInsertId()
+	createdID, err := result.LastInsertId()
 	if err != nil {
 		return model.Product{}, err
 	}
 
-	product.ID = lastID
-	return product, nil
+	return r.Get(ctx, createdID)
 }
 
 func (r *productRepository) Fetch(ctx context.Context, filter model.ProductFilter) ([]model.Product, int64, error) {

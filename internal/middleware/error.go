@@ -8,6 +8,7 @@ import (
 
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
 	"github.com/ariefsibuea/freshmart-api/internal/pkg/logger"
+	pkgres "github.com/ariefsibuea/freshmart-api/internal/pkg/response"
 
 	"github.com/labstack/echo/v4"
 )
@@ -51,12 +52,8 @@ func ErrorHandler(err error, c echo.Context) {
 		}
 	}
 
-	c.JSON(code, errorResponse(message))
-}
-
-func errorResponse(message string) map[string]any {
-	return map[string]any{
-		"status": "error",
-		"error":  map[string]string{"message": message},
-	}
+	c.JSON(code, pkgres.Response{
+		Status: pkgres.StatusError,
+		Error:  &pkgres.ErrorDetail{Message: message},
+	})
 }

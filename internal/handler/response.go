@@ -1,42 +1,23 @@
 package handler
 
 import (
+	pkgres "github.com/ariefsibuea/freshmart-api/internal/pkg/response"
+
 	"github.com/labstack/echo/v4"
 )
 
-type Response struct {
-	Status     string       `json:"status"`
-	Data       any          `json:"data,omitempty"`
-	Pagination *Pagination  `json:"pagination,omitempty"`
-	Error      *ErrorDetail `json:"error,omitempty"`
-}
-
-type Pagination struct {
-	Page       int `json:"page"`
-	PageSize   int `json:"page_size"`
-	TotalItems int `json:"total_items"`
-	TotalPages int `json:"total_pages"`
-}
-
-type ErrorDetail struct {
-	Message string `json:"message"`
-}
-
-const (
-	StatusSuccess = "success"
-	StatusError   = "error"
-)
+type Pagination = pkgres.Pagination
 
 func Success(c echo.Context, statusCode int, data any) error {
-	return c.JSON(statusCode, Response{
-		Status: StatusSuccess,
+	return c.JSON(statusCode, pkgres.Response{
+		Status: pkgres.StatusSuccess,
 		Data:   data,
 	})
 }
 
 func SuccessWithPagination(c echo.Context, statusCode int, data any, pagination Pagination) error {
-	return c.JSON(statusCode, Response{
-		Status:     StatusSuccess,
+	return c.JSON(statusCode, pkgres.Response{
+		Status:     pkgres.StatusSuccess,
 		Data:       data,
 		Pagination: &pagination,
 	})
