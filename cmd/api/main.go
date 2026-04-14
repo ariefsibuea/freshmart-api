@@ -13,38 +13,52 @@ import (
 	"github.com/ariefsibuea/freshmart-api/internal/cache"
 	"github.com/ariefsibuea/freshmart-api/internal/database"
 	"github.com/ariefsibuea/freshmart-api/internal/handler"
+	mw "github.com/ariefsibuea/freshmart-api/internal/middleware"
+	"github.com/ariefsibuea/freshmart-api/internal/pkg/logger"
 	"github.com/ariefsibuea/freshmart-api/internal/repository"
 	"github.com/ariefsibuea/freshmart-api/internal/usecase"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 func main() {
 	conf := config.Load()
 
-	e := echo.New()
-	e.Logger.SetLevel(log.Lvl(conf.LogLevel))
+	logger.Init(logger.ToSlogLevel(conf.LogLevel))
 
+	e := echo.New()
 	e.Server.ReadTimeout = conf.ServerReadTimeout
 	e.Server.WriteTimeout = conf.ServerWriteTimeout
 	e.Server.IdleTimeout = conf.ServerIdleTimeout
 
 	e.HTTPErrorHandler = handler.ErrorHandler
 
+	e.Use(mw.RequestID())
+	e.Use(mw.Log())
+	e.Use(mw.CORS(conf.AllowOrigins))
+	e.Use(mw.Timeout(conf.ServerRequestTimeout))
+
 	redisAddr := fmt.Sprintf("%s:%d", conf.Cache.RedisHost, conf.Cache.RedisPort)
 	redisCache, err := cache.NewRedisConnection(redisAddr, conf.Cache.RedisPingTimeout)
 	if err != nil {
-		e.Logger.Warnf("redis at %q unavailable, continuing without cache: %v", redisAddr, err)
+		logger.FromContext(context.Background()).Warn("redis unavailable, continuing without cache",
+			"addr", redisAddr,
+			logger.FieldError, err.Error(),
+		)
 	}
 
 	mysqlDB, err := database.NewMySQLConnection(conf.Database)
 	if err != nil {
-		e.Logger.Fatalf("mysql db unavailable: %v", err)
+		logger.FromContext(context.Background()).Error("mysql db unavailable",
+			logger.FieldError, err.Error(),
+		)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := mysqlDB.Close(); err != nil {
-			e.Logger.Warnf("close mysq connection failed: %v", err)
+			logger.FromContext(context.Background()).Warn("close mysql connection failed",
+				logger.FieldError, err.Error(),
+			)
 		}
 	}()
 
@@ -66,7 +80,10 @@ func main() {
 	go func() {
 		address := fmt.Sprintf(":%d", conf.ServerPort)
 		if err := e.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			e.Logger.Fatalf("shutting down the server: %v", err)
+			logger.FromContext(context.Background()).Error("shutting down the server",
+				logger.FieldError, err.Error(),
+			)
+			os.Exit(1)
 		}
 	}()
 
@@ -76,6 +93,8 @@ func main() {
 	defer cancel()
 
 	if err := e.Shutdown(shutdownCtx); err != nil {
-		e.Logger.Fatal(err)
+		logger.FromContext(context.Background()).Error("shutdown error",
+			logger.FieldError, err.Error(),
+		)
 	}
 }

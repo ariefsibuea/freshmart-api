@@ -15,11 +15,13 @@ var (
 type Config struct {
 	ServerPort            int           `envconfig:"SERVER_PORT" default:"8080"`
 	ServerShutdownTimeout time.Duration `envconfig:"SERVER_SHUTDOWN_TIMEOUT" default:"10s"`
-	ServerReadTimeout     time.Duration `envconfig:"SERVER_READ_TIMEOUT" default:"5s"`
-	ServerWriteTimeout    time.Duration `envconfig:"SERVER_WRITE_TIMEOUT" default:"10s"`
+	ServerReadTimeout     time.Duration `envconfig:"SERVER_READ_TIMEOUT" default:"2s"`
+	ServerWriteTimeout    time.Duration `envconfig:"SERVER_WRITE_TIMEOUT" default:"7s"`
+	ServerRequestTimeout  time.Duration `envconfig:"SERVER_REQUEST_TIMEOUT" default:"3s"`
 	ServerIdleTimeout     time.Duration `envconfig:"SERVER_IDLE_TIMEOUT" default:"60s"`
 
-	LogLevel int `envconfig:"LOG_LEVEL" default:"1"`
+	LogLevel     int      `envconfig:"LOG_LEVEL" default:"1"`
+	AllowOrigins []string `envconfig:"ALLOW_ORIGINS" default:"http://localhost:8080"`
 
 	Database DatabaseConfig
 	Cache    CacheConfig

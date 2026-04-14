@@ -3,11 +3,11 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/ariefsibuea/freshmart-api/internal/cache"
 	"github.com/ariefsibuea/freshmart-api/internal/model"
+	"github.com/ariefsibuea/freshmart-api/internal/pkg/logger"
 	"github.com/ariefsibuea/freshmart-api/internal/repository"
 )
 
@@ -63,7 +63,11 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 	}
 
 	if err != cache.ErrCacheKeyNotFound {
-		slog.Warn("cache get error", "cacheKey", cacheKey, "error", err)
+		logger.FromContext(ctx).Warn("cache get error",
+			"cacheKey", cacheKey,
+			"error", err,
+			logger.FieldError, err.Error(),
+		)
 	}
 
 	product, err := u.repository.Get(ctx, id)
@@ -72,7 +76,11 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 	}
 
 	if cacheErr := u.cache.Set(ctx, cacheKey, product, u.cacheTTL); cacheErr != nil {
-		slog.Warn("write product to cache failed", "id", id, "cacheKey", cacheKey)
+		logger.FromContext(ctx).Warn("write product to cache failed",
+			"id", id,
+			"cacheKey", cacheKey,
+			logger.FieldError, err.Error(),
+		)
 	}
 
 	return product, nil
