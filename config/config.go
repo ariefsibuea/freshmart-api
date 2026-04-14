@@ -21,7 +21,7 @@ type Config struct {
 	ServerIdleTimeout     time.Duration `envconfig:"SERVER_IDLE_TIMEOUT" default:"60s"`
 
 	LogLevel     int      `envconfig:"LOG_LEVEL" default:"1"`
-	AllowOrigins []string `envconfig:"ALLOW_ORIGINS" default:"http://localhost:8080"`
+	AllowOrigins []string `envconfig:"ALLOW_ORIGINS" default:"*"`
 
 	Database DatabaseConfig
 	Cache    CacheConfig

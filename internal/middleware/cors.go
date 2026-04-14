@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	allowMethods = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-	allowHeaders = "Accept, Authorization, Content-Type, X-Request-ID"
+	allowMethods = "GET, POST, OPTIONS"
+	allowHeaders = "Accept, Content-Type, X-Request-ID"
 	maxAge       = "86400" // 24h
 )
 
@@ -34,17 +34,17 @@ func CORS(allowOrigins []string) echo.MiddlewareFunc {
 			}
 
 			if req.Method == http.MethodOptions && req.Header.Get(echo.HeaderAccessControlRequestMethod) != "" {
+				res.Header().Add(echo.HeaderVary, echo.HeaderAccessControlRequestMethod)
+				res.Header().Add(echo.HeaderVary, echo.HeaderAccessControlRequestHeaders)
 				res.Header().Set(echo.HeaderAccessControlAllowOrigin, origin)
 				res.Header().Set(echo.HeaderAccessControlAllowMethods, allowMethods)
 				res.Header().Set(echo.HeaderAccessControlAllowHeaders, allowHeaders)
-				res.Header().Set(echo.HeaderAccessControlAllowCredentials, "true")
 				res.Header().Set(echo.HeaderAccessControlMaxAge, maxAge)
 				return c.NoContent(http.StatusNoContent)
 			}
 
 			res.Header().Set(echo.HeaderAccessControlAllowOrigin, origin)
-			res.Header().Set(echo.HeaderAccessControlAllowCredentials, "true")
-			res.Header().Set(echo.HeaderAccessControlExposeHeaders, "Content-Length, Content-Type, X-Request-ID")
+			res.Header().Set(echo.HeaderAccessControlExposeHeaders, "X-Request-ID")
 
 			return next(c)
 		}
