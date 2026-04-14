@@ -42,7 +42,14 @@ func (h *productHandler) create(c echo.Context) error {
 func (h *productHandler) fetch(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	filter, err := model.NewProductFilter(c)
+	filter, err := model.NewProductFilter(
+		c.QueryParam("name"),
+		c.QueryParam("product_type"),
+		c.QueryParam("page"),
+		c.QueryParam("page_size"),
+		c.QueryParam("sort_by"),
+		c.QueryParam("order"),
+	)
 	if err != nil {
 		return err
 	}

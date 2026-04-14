@@ -6,7 +6,6 @@ import (
 	"time"
 
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
-	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -104,20 +103,20 @@ type ProductFilter struct {
 	PageSize    int
 }
 
-func NewProductFilter(c echo.Context) (ProductFilter, error) {
+func NewProductFilter(name, productType, page, pageSize, sortBy, order string) (ProductFilter, error) {
 	filter := ProductFilter{
-		Name:     c.QueryParam("name"),
-		SortBy:   c.QueryParam("sort_by"),
-		Order:    c.QueryParam("order"),
+		Name:     name,
+		SortBy:   sortBy,
+		Order:    order,
 		Page:     DefaultPage,
 		PageSize: DefaultPageSize,
 	}
 
-	if productType := c.QueryParam("product_type"); productType != "" {
+	if productType != "" {
 		filter.ProductType = ProductType(productType)
 	}
 
-	if page := c.QueryParam("page"); page != "" {
+	if page != "" {
 		p, err := strconv.Atoi(page)
 		if err != nil {
 			return ProductFilter{}, pkgerr.BadRequestError("invalid query parameter 'page'")
@@ -127,7 +126,7 @@ func NewProductFilter(c echo.Context) (ProductFilter, error) {
 		}
 	}
 
-	if pageSize := c.QueryParam("page_size"); pageSize != "" {
+	if pageSize != "" {
 		ps, err := strconv.Atoi(pageSize)
 		if err != nil {
 			return ProductFilter{}, pkgerr.BadRequestError("invalid query parameter 'page_size'")
