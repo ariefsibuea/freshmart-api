@@ -42,31 +42,11 @@ func (h *productHandler) create(c echo.Context) error {
 func (h *productHandler) fetch(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	filter := model.ProductFilter{
-		Name:     c.QueryParam("name"),
-		SortBy:   c.QueryParam("sort_by"),
-		Order:    c.QueryParam("order"),
-		Page:     model.DefaultPage,
-		PageSize: model.DefaultPageSize,
+	filter, err := model.NewProductFilter(c)
+	if err != nil {
+		return err
 	}
-
-	if productType := c.QueryParam("product_type"); productType != "" {
-		filter.ProductType = model.ProductType(productType)
-	}
-
-	if page := c.QueryParam("page"); page != "" {
-		if p, err := strconv.Atoi(page); err == nil {
-			filter.Page = p
-		}
-	}
-
-	if pageSize := c.QueryParam("page_size"); pageSize != "" {
-		if ps, err := strconv.Atoi(pageSize); err == nil {
-			filter.PageSize = ps
-		}
-	}
-
-	if err := filter.Validate(); err != nil {
+	if err = filter.Validate(); err != nil {
 		return err
 	}
 

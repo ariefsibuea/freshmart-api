@@ -1,10 +1,12 @@
 package model
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
 	pkgerr "github.com/ariefsibuea/freshmart-api/internal/pkg/errors"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -102,6 +104,42 @@ type ProductFilter struct {
 	PageSize    int
 }
 
+func NewProductFilter(c echo.Context) (ProductFilter, error) {
+	filter := ProductFilter{
+		Name:     c.QueryParam("name"),
+		SortBy:   c.QueryParam("sort_by"),
+		Order:    c.QueryParam("order"),
+		Page:     DefaultPage,
+		PageSize: DefaultPageSize,
+	}
+
+	if productType := c.QueryParam("product_type"); productType != "" {
+		filter.ProductType = ProductType(productType)
+	}
+
+	if page := c.QueryParam("page"); page != "" {
+		p, err := strconv.Atoi(page)
+		if err != nil {
+			return ProductFilter{}, pkgerr.BadRequestError("invalid query parameter 'page'")
+		}
+		if p > 0 {
+			filter.Page = p
+		}
+	}
+
+	if pageSize := c.QueryParam("page_size"); pageSize != "" {
+		ps, err := strconv.Atoi(pageSize)
+		if err != nil {
+			return ProductFilter{}, pkgerr.BadRequestError("invalid query parameter 'page_size'")
+		}
+		if ps > 0 {
+			filter.PageSize = ps
+		}
+	}
+
+	return filter, nil
+}
+
 func (f *ProductFilter) Validate() error {
 	if f.ProductType.String() != "" && !f.ProductType.IsValid() {
 		return pkgerr.BadRequestErrorf("invalid product_type: must be one of %v", ValidProductTypes)
@@ -113,13 +151,6 @@ func (f *ProductFilter) Validate() error {
 
 	if !ValidOrder[f.Order] {
 		return pkgerr.BadRequestError("invalid order: must be one of 'asc', 'desc'")
-	}
-
-	if f.Page < 1 {
-		f.Page = 1
-	}
-	if f.PageSize < 1 {
-		f.PageSize = 10
 	}
 
 	return nil
