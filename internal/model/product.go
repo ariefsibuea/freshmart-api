@@ -11,6 +11,7 @@ import (
 const (
 	DefaultPage     = 1
 	DefaultPageSize = 10
+	MaxPageSize     = 100
 )
 
 type ProductType string
@@ -133,6 +134,9 @@ func NewProductFilter(name, productType, page, pageSize, sortBy, order string) (
 		}
 		if ps > 0 {
 			filter.PageSize = ps
+		}
+		if ps > MaxPageSize {
+			filter.PageSize = MaxPageSize
 		}
 	}
 

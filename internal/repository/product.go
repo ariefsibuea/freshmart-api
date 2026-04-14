@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/ariefsibuea/freshmart-api/internal/model"
@@ -165,7 +166,7 @@ func (r *productRepository) Get(ctx context.Context, id int64) (model.Product, e
 		&product.UpdatedAt,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return model.Product{}, pkgerr.NotFoundErrorf("product with id %d not found", id)
 		}
 		return model.Product{}, err
