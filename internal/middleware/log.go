@@ -38,17 +38,15 @@ func Log() echo.MiddlewareFunc {
 				logger.FieldLatencyMS, latencyMS,
 			}
 
+			if err != nil {
+				fields = append(fields, logger.FieldError, err.Error())
+			}
+
 			switch {
 			case status >= http.StatusInternalServerError:
-				if err != nil {
-					fields = append(fields, logger.FieldError, err.Error())
-					log.Error("request completed", fields...)
-				}
+				log.Error("server error", fields...)
 			case status >= http.StatusBadRequest:
-				if err != nil {
-					fields = append(fields, logger.FieldError, err.Error())
-					log.Error("request completed", fields...)
-				}
+				log.Warn("client error", fields...)
 			default:
 				log.Info("request completed", fields...)
 			}
