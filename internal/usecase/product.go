@@ -56,17 +56,19 @@ func (u *productUsecase) Create(ctx context.Context, req model.CreateProductRequ
 func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, error) {
 	cacheKey := fmt.Sprintf("products:%d", id)
 
-	var cachedProduct model.Product
-	err := u.cache.Get(ctx, cacheKey, &cachedProduct)
-	if err == nil {
-		return cachedProduct, nil
-	}
+	if u.cache != nil {
+		var cachedProduct model.Product
+		err := u.cache.Get(ctx, cacheKey, &cachedProduct)
+		if err == nil {
+			return cachedProduct, nil
+		}
 
-	if err != cache.ErrCacheKeyNotFound {
-		logger.FromContext(ctx).Warn("cache get error",
-			"cacheKey", cacheKey,
-			logger.FieldError, err.Error(),
-		)
+		if err != cache.ErrCacheKeyNotFound {
+			logger.FromContext(ctx).Warn("cache get error",
+				"cacheKey", cacheKey,
+				logger.FieldError, err.Error(),
+			)
+		}
 	}
 
 	product, err := u.repository.Get(ctx, id)
@@ -74,12 +76,14 @@ func (u *productUsecase) Get(ctx context.Context, id int64) (model.Product, erro
 		return model.Product{}, fmt.Errorf("get product '%d' failed: %w", id, err)
 	}
 
-	if cacheErr := u.cache.Set(ctx, cacheKey, product, u.cacheTTL); cacheErr != nil {
-		logger.FromContext(ctx).Warn("write product to cache failed",
-			"id", id,
-			"cacheKey", cacheKey,
-			logger.FieldError, cacheErr.Error(),
-		)
+	if u.cache != nil {
+		if cacheErr := u.cache.Set(ctx, cacheKey, product, u.cacheTTL); cacheErr != nil {
+			logger.FromContext(ctx).Warn("write product to cache failed",
+				"id", id,
+				"cacheKey", cacheKey,
+				logger.FieldError, cacheErr.Error(),
+			)
+		}
 	}
 
 	return product, nil
