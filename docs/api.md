@@ -55,8 +55,8 @@ All responses follow a consistent JSON envelope.
 | `product_type` | `string`  | No       | One of: `Sayuran`, `Protein`, `Buah`, `Snack`       |
 | `description`  | `string`  | Yes      | Product description (omitted from response if null) |
 | `quantity`     | `integer` | No       | Available stock                                     |
-| `created_at`   | `string`  | No       | ISO 8601 timestamp                                  |
-| `updated_at`   | `string`  | No       | ISO 8601 timestamp                                  |
+| `created_at`   | `string`  | No       | Product creation timestamp                          |
+| `updated_at`   | `string`  | No       | Last modification timestamp                         |
 
 ---
 
@@ -122,14 +122,14 @@ List products with optional search, filter, sort, and pagination.
 
 **Query Parameters:**
 
-| Parameter      | Type      | Default      | Description                                           |
-| -------------- | --------- | ------------ | ----------------------------------------------------- |
-| `name`         | `string`  | —            | Case-insensitive partial match on product name        |
-| `product_type` | `string`  | —            | Exact match: `Sayuran`, `Protein`, `Buah`, or `Snack` |
-| `sort_by`      | `string`  | `created_at` | Sort field: `created_at`, `price`, or `name`          |
-| `order`        | `string`  | `desc`       | Sort direction: `asc` or `desc`                       |
-| `page`         | `integer` | `1`          | Page number (>= 1)                                    |
-| `page_size`    | `integer` | `10`         | Items per page (>= 1, max `100`)                      |
+| Parameter      | Type      | Default | Description                                           |
+| -------------- | --------- | ------- | ----------------------------------------------------- |
+| `name`         | `string`  | —       | Case-insensitive partial match on product name        |
+| `product_type` | `string`  | —       | Exact match: `Sayuran`, `Protein`, `Buah`, or `Snack` |
+| `sort_by`      | `string`  | `date`  | Sort field: `date` (`created_at`), `price`, or `name` |
+| `order`        | `string`  | `desc`  | Sort direction: `asc` or `desc`                       |
+| `page`         | `integer` | `1`     | Page number (>= 1)                                    |
+| `page_size`    | `integer` | `10`    | Items per page (>= 1, max `100`)                      |
 
 **Example requests:**
 
@@ -182,6 +182,7 @@ GET /api/v1/products?name=ayam&product_type=Protein&sort_by=price&order=asc&page
 | ------ | --------------------------------------------------------- | ----------------------------------- |
 | `400`  | `invalid query parameter 'page'`                          | Non-integer `page` value            |
 | `400`  | `invalid query parameter 'page_size'`                     | Non-integer `page_size` value       |
+| `400`  | `page_size must not exceed 100`                           | `page_size` exceeds the maximum     |
 | `400`  | `invalid product_type: must be one of [...]`              | Invalid `product_type` filter value |
 | `400`  | `invalid sort_by: must be one of 'price', 'name', 'date'` | Invalid `sort_by` value             |
 | `400`  | `invalid order: must be one of 'asc', 'desc'`             | Invalid `order` value               |

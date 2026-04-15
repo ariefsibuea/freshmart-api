@@ -19,6 +19,8 @@ A RESTful product catalog API for a grocery retail. Supports adding and retrievi
 
 ### Prerequisites
 
+- Go 1.25.9+
+- `golang-migrate` CLI — required by migration targets ([installation guide](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate))
 - Docker v24+
 - Docker Compose v2+
 

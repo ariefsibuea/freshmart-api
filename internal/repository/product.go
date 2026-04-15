@@ -87,7 +87,7 @@ func (r *productRepository) Fetch(ctx context.Context, filter model.ProductFilte
 	}
 
 	// NOTE: add id as unique column when sorting the products in case
-	// the remaining sort columns have the same values accross products.
+	// the remaining sort columns have the same values across products.
 	if filter.Order == "asc" {
 		orderClause += " ASC, id ASC"
 	} else {

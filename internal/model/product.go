@@ -132,11 +132,11 @@ func NewProductFilter(name, productType, page, pageSize, sortBy, order string) (
 		if err != nil {
 			return ProductFilter{}, pkgerr.BadRequestError("invalid query parameter 'page_size'")
 		}
+		if ps > MaxPageSize {
+			return ProductFilter{}, pkgerr.BadRequestErrorf("page_size must not exceed %d", MaxPageSize)
+		}
 		if ps > 0 {
 			filter.PageSize = ps
-		}
-		if ps > MaxPageSize {
-			filter.PageSize = MaxPageSize
 		}
 	}
 
